@@ -4,6 +4,11 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 namespace Compilador
 {
 
+    /*PENDIENTE POR HACER
+     * operadores aritmeticos + - * / %
+     * operadores relacionales < > <= >= != =
+     * digito decimales
+
     /*CONCEPTOS A ENTENDER 
 
      .Leer.Read() lee uno por uno en ASCII
@@ -233,11 +238,52 @@ namespace Compilador
                     EscribirTrad.Write((char)i_caracter);
 
                 }
+
+                else if (tipo == 'h') // &
+                {
+                    int siguiente = Leer.Read();
+                    if (siguiente == '&')
+                    {
+                        Escribir.WriteLine("operador logico: &&");
+                        EscribirTrad.Write("&&");
+                    }
+                    else
+                    {
+                        Escribir.WriteLine("simbolo: &");
+                        EscribirTrad.Write("&");
+                        i_caracter = siguiente; // devolvemos el caracter que se adelantó
+                    }
+                }
+
+                else if (tipo == 'k') // |
+                {
+                    int siguiente = Leer.Read();
+                    if (siguiente == '|')
+                    {
+                        Escribir.WriteLine("operador logico: ||");
+                        EscribirTrad.Write("||");
+                    }
+                    else
+                    {
+                        Escribir.WriteLine("simbolo: |");
+                        EscribirTrad.Write("|");
+                        i_caracter = siguiente; // devolvemos el caracter que se adelantó
+                    }
+                }
+
+
                 else if (i_caracter != -1) // cualquier otro carácter
                 {
                     Escribir.WriteLine("otro: " + (char)i_caracter);
                     EscribirTrad.Write((char)i_caracter);
                 }
+                else if (tipo == 'z')
+                {
+                    // no hacer nada, fin de archivo
+                }
+
+
+
 
             } while (i_caracter != -1);
 
@@ -267,6 +313,9 @@ namespace Compilador
             {
                 return 'i'; // Operador relacional
             }
+
+            if (caracter == -1)
+                return 'z'; // marca fin de archivo
             else
             {
                 switch (caracter)
@@ -277,6 +326,8 @@ namespace Compilador
                     case 47: return 'j'; // ASCII de barra 47
                     //programar para los casos que sean simbolos y regresar 's'
                     case 33: return 'g'; // ASCII de !
+                    case 38: return 'h'; // ASCCI DE & posible &&
+                    case 124: return 'k'; // ASCII DE |  posible ||
                     default: return 's'; //si no es de los casos anteriores es error
 
                 }
@@ -286,7 +337,7 @@ namespace Compilador
 
         }
 
-        //-----CORREGIR, SI DETECTA UNA "", lo asume como comentario aunque no acabe 
+         
         private string Cadena(out bool cerrada)
         {
             string contenido = "";
