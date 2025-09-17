@@ -7,7 +7,7 @@ namespace Compilador
     /*PENDIENTE POR HACER
      * operadores aritmeticos + - * / %
      * operadores relacionales < > <= >= != =
-     * digito decimales
+     * digito decimales. 
 
     /*CONCEPTOS A ENTENDER 
 
