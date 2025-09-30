@@ -16,6 +16,7 @@ namespace Compilador
      */
     public partial class Form1 : Form
     {
+        private int lookahead = -1;
         public Form1()
         {
             InitializeComponent();
@@ -120,6 +121,8 @@ namespace Compilador
         private void aNALIZARToolStripMenuItem_Click(object sender, EventArgs e)
         {
             guardar();
+            if (Cabecera())
+            { 
             N_error = 0;
             N_linea = 1;
             Rtbx_salida.Clear();
@@ -132,13 +135,22 @@ namespace Compilador
 
             string palabra = "";
 
+
             do
             {
-                i_caracter = Leer.Read();
+                if (lookahead != -1)
+                {
+                    i_caracter = lookahead;
+                    lookahead = -1;
+                }
+                else
+                {
+                    i_caracter = Leer.Read();
+                }
 
                 if (i_caracter == -1)
                 {
-                    break; // sal del do-while, ya no proceses nada
+                    break; // fin de archivo
                 }
 
                 char tipo = Tipo_caracter(i_caracter);
@@ -151,17 +163,27 @@ namespace Compilador
                         palabra += (char)i_caracter;
                         i_caracter = Leer.Read();
                     }
+                    lookahead = i_caracter;
 
-                    int idx = reservadas.IndexOf(palabra);
-                    if (idx != -1) // es palabra reservada
+                    int idxTipo = tipos.IndexOf(palabra);
+                    if (idxTipo != -1) // es tipo de dato
                     {
-                        Escribir.WriteLine("palabra reservada: " + palabra);
-                        EscribirTrad.Write(traducciones[idx] + " ");
+                        Escribir.WriteLine("tipo: " + palabra);
+                        EscribirTrad.Write(tipos_traduccion[idxTipo] + " ");
                     }
-                    else // identificador
+                    else
                     {
-                        Escribir.WriteLine("identificador: " + palabra);
-                        EscribirTrad.Write(palabra + " ");
+                        int idx = reservadas.IndexOf(palabra);
+                        if (idx != -1) // es palabra reservada
+                        {
+                            Escribir.WriteLine("palabra reservada: " + palabra);
+                            EscribirTrad.Write(traducciones[idx] + " ");
+                        }
+                        else // identificador
+                        {
+                            Escribir.WriteLine("identificador: " + palabra);
+                            EscribirTrad.Write(palabra + " ");
+                        }
                     }
                 }
                 else if (tipo == 'd') // dígito
@@ -193,6 +215,7 @@ namespace Compilador
 
                 }
 
+
                 else if (tipo == 'j')
                 {
                     int siguiente = Leer.Read();
@@ -205,7 +228,7 @@ namespace Compilador
                             siguiente = Leer.Read();
                         }
                         Escribir.WriteLine("comentario: " + comentario);
-                        EscribirTrad.Write("");
+                        EscribirTrad.Write("/" + comentario + "");
                     }
                     else if (siguiente == '*')
                     {
@@ -282,8 +305,7 @@ namespace Compilador
                     // no hacer nada, fin de archivo
                 }
 
-
-
+//------------------------------------------CABECERA--------------------
 
             } while (i_caracter != -1);
 
@@ -291,6 +313,37 @@ namespace Compilador
             Escribir.Close();
             EscribirTrad.Close();
             Leer.Close();
+            }
+            bool Cabecera()
+            {
+                Leer = new StreamReader(archivo);
+                int i_cabecera = Leer.Read();
+
+                if (i_cabecera == 35)
+                {
+                    directiva_procesador();
+                    return true;
+                }
+                else
+                {
+                    Error(i_cabecera);
+                    return false;
+                }
+                    /*switch (i_cabecera)
+                    {
+                        case 35:
+                            directiva_procesador();
+                            break;
+                        default: Error(i_cabecera);
+                            break;
+                    }
+                    return false;*/
+                }
+
+            void directiva_procesador()
+            {
+                MessageBox.Show("Directiva de preprocesador");
+            }
         }
 
         private void cOMPILARToolStripMenuItem_Click(object sender, EventArgs e)
@@ -324,6 +377,8 @@ namespace Compilador
                     case 34: return 'x'; // ASCII inicio de cadena 34
                     case 39: return 'c'; // ASCII de inicio de caracter 39
                     case 47: return 'j'; // ASCII de barra 47
+                    case 32: return 'b'; // espacio
+                    case 9: return 'b';  // tab
                     //programar para los casos que sean simbolos y regresar 's'
                     case 33: return 'g'; // ASCII de !
                     case 38: return 'h'; // ASCCI DE & posible &&
@@ -336,8 +391,6 @@ namespace Compilador
 
 
         }
-
-         
         private string Cadena(out bool cerrada)
         {
             string contenido = "";
@@ -373,32 +426,47 @@ namespace Compilador
         // Lista de palabras reservadas en C
         List<string> reservadas = new List<string>
         {
-            "auto","break","case","char","const","continue","default","do","double",
-            "else","enum","extern","float","for","goto","if","inline","int","long",
+            "auto","break","case","const","continue","default","do",
+            "else","enum","extern","for","goto","if","inline","int","long",
             "register","restrict","return","short","signed","sizeof","static","struct",
-            "switch","typedef","union","unsigned","void","volatile","while",
+            "switch","typedef","union","unsigned","volatile","while",
             "_Alignas","_Alignof","_Atomic","_Bool","_Complex","_Generic","_Imaginary",
-            "_Noreturn","_Static_assert","_Thread_local","asm","bool","catch","class",
+            "_Noreturn","_Static_assert","_Thread_local","asm","catch","class",
             "const_cast","delete","dynamic_cast","explicit","export","false","friend",
             "mutable","namespace","new","operator","private","protected","public",
             "reinterpret_cast","static_cast","template","this","throw","true","try",
-            "typeid","typename","using","virtual","wchar_t","main","include","define"
+            "typeid","typename","using","virtual","wchar_t","main","include","define","printf"
         };
 
         // Traducciones en español (mismo orden que la lista de arriba)
         List<string> traducciones = new List<string>
         {
-            "auto","romper","caso","carácter","constante","continuar","defecto","hacer","doble",
-            "sino","enumeración","externo","flotante","para","ir","si","en línea","entero","largo",
+            "auto","romper","caso","constante","continuar","defecto","hacer",
+            "sino","enumeración","externo","para","ir","si","en línea","entero","largo",
             "registro","restringido","retornar","corto","con signo","tamaño de","estático","estructura",
-            "selección","definir tipo","unión","sin signo","vacío","volátil","mientras",
+            "selección","definir tipo","unión","sin signo","volátil","mientras",
             "alinear como","alineación de","atómico","booleano","complejo","genérico","imaginario",
-            "sin retorno","afirmación estática","hilo local","ensamblador","booleano","capturar","clase",
+            "sin retorno","afirmación estática","hilo local","ensamblador","capturar","clase",
             "conversión constante","eliminar","conversión dinámica","explícito","exportar","falso","amigo",
             "mutable","espacio de nombres","nuevo","operador","privado","protegido","público",
             "conversión reinterpretada","conversión estática","plantilla","este","lanzar","verdadero","intentar",
-            "tipoid","nombre de tipo","usando","virtual","carácter ancho","principal","incluir","definir"
+            "tipoid","nombre de tipo","usando","virtual","carácter ancho","principal","incluir","definir","imprimir"
         };
 
-    } 
+        List<string> tipos = new List<string>
+        {
+            "int","float","double","char","void","bool"
+        };
+
+
+        List<string> tipos_traduccion = new List<string>
+        {
+            "int","float","double","char","void","bool"
+        };
+
+
+
+
+
+    }
 }
