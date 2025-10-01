@@ -121,8 +121,7 @@ namespace Compilador
         private void aNALIZARToolStripMenuItem_Click(object sender, EventArgs e)
         {
             guardar();
-            if (Cabecera())
-            { 
+            Cabecera();
             N_error = 0;
             N_linea = 1;
             Rtbx_salida.Clear();
@@ -305,7 +304,6 @@ namespace Compilador
                     // no hacer nada, fin de archivo
                 }
 
-//------------------------------------------CABECERA--------------------
 
             } while (i_caracter != -1);
 
@@ -314,6 +312,8 @@ namespace Compilador
             EscribirTrad.Close();
             Leer.Close();
             }
+            
+            /*------------------------------------------CABECERA-------------------
             bool Cabecera()
             {
                 Leer = new StreamReader(archivo);
@@ -337,14 +337,14 @@ namespace Compilador
                         default: Error(i_cabecera);
                             break;
                     }
-                    return false;*/
+                    return false;
                 }
 
             void directiva_procesador()
             {
                 MessageBox.Show("Directiva de preprocesador");
             }
-        }
+        }*/
 
         private void cOMPILARToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -466,7 +466,96 @@ namespace Compilador
 
 
 
+        private bool Cabecera()
+        {
+            Leer = new StreamReader(archivo);
 
+            // Saltar espacios o saltos de línea iniciales
+            int c;
+            do
+            {
+                c = Leer.Read();
+            } while (c == ' ' || c == '\t' || c == '\r' || c == '\n');
+
+            // 1. Debe comenzar con '#'
+            if (c != '#')
+            {
+                Error(c);
+                MessageBox.Show("Error: El archivo debe comenzar con #include");
+                Leer.Close();
+                return false;
+            }
+
+            // 2. Verificar que lo que sigue sea "include"
+            string palabra = "";
+            int next;
+            while ((next = Leer.Read()) != -1 && char.IsLetter((char)next))
+            {
+                palabra += (char)next;
+            }
+
+            if (palabra != "include")
+            {
+                Error(next);
+                MessageBox.Show("Error: Se esperaba 'include' después de '#'");
+                Leer.Close();
+                return false;
+            }
+
+            // 3. Saltar espacios en blanco
+            while (next == ' ' || next == '\t')
+                next = Leer.Read();
+
+            // 4. Librería entre "" o <>
+            if (next == '"') // include "libreria.h"
+            {
+                string libreria = "";
+                int ch;
+                while ((ch = Leer.Read()) != -1 && ch != '"')
+                {
+                    libreria += (char)ch;
+                }
+
+                if (ch != '"')
+                {
+                    Error(-1);
+                    MessageBox.Show("Error: Falta cerrar comillas en #include");
+                    Leer.Close();
+                    return false;
+                }
+
+                Rtbx_salida.AppendText("Cabecera detectada: include \"" + libreria + "\"\n");
+            }
+            else if (next == '<') // include <libreria.h>
+            {
+                string libreria = "";
+                int ch;
+                while ((ch = Leer.Read()) != -1 && ch != '>')
+                {
+                    libreria += (char)ch;
+                }
+
+                if (ch != '>')
+                {
+                    Error(-1);
+                    MessageBox.Show("Error: Falta cerrar '>' en #include");
+                    Leer.Close();
+                    return false;
+                }
+
+                Rtbx_salida.AppendText("Cabecera detectada: include <" + libreria + ">\n");
+            }
+            else
+            {
+                Error(next);
+                MessageBox.Show("Error: Se esperaba \"\" o <> después de #include");
+                Leer.Close();
+                return false;
+            }
+
+            Leer.Close();
+            return true;
+        }
 
     }
 }
