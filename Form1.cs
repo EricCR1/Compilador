@@ -3,17 +3,6 @@ using System.Runtime.Intrinsics.X86;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 namespace Compilador
 {
-
-    /*PENDIENTE POR HACER
-     * operadores aritmeticos + - * / %
-     * operadores relacionales < > <= >= != =
-     * digito decimales. 
-
-    /*CONCEPTOS A ENTENDER 
-
-     .Leer.Read() lee uno por uno en ASCII
-
-     */
     public partial class Form1 : Form
     {
         private int lookahead = -1;
@@ -121,20 +110,40 @@ namespace Compilador
         private void aNALIZARToolStripMenuItem_Click(object sender, EventArgs e)
         {
             guardar();
-            Cabecera();
+            archivoback = archivo.Remove(archivo.Length - 1) + "back"; //extensión .back    
+            archivotrad = archivo.Remove(archivo.Length - 1) + "trad"; //extensión .trad
             N_error = 0;
             N_linea = 1;
             Rtbx_salida.Clear();
-            archivoback = archivo.Remove(archivo.Length - 1) + "back"; //extensión .back    
-            archivotrad = archivo.Remove(archivo.Length - 1) + "trad"; //extensión .trad
+            // ====== VERIFICACIÓN DE CABECERA ======
+            string primeraLinea = File.ReadLines(archivo).FirstOrDefault()?.Trim() ?? "";
+
+            if (!primeraLinea.Equals("#include <stdio.h>"))
+            {
+                Rtbx_salida.AppendText("Error: El archivo debe iniciar con #include <stdio.h>\n");
+                Error(-1);
+                return; // detiene el análisis
+            }
+
+            // Si la cabecera está bien, la registramos manualmente con la excepción del punto
+            Rtbx_salida.AppendText("Cabecera detectada correctamente.\n");
 
             Escribir = new StreamWriter(archivoback);
             StreamWriter EscribirTrad = new StreamWriter(archivotrad);
             Leer = new StreamReader(archivo);
 
+            // Escribimos los tokens separados manualmente (manteniendo el punto)
+            Escribir.WriteLine("#");
+            Escribir.WriteLine("include");
+            Escribir.WriteLine("<");
+            Escribir.WriteLine("libreria");
+            Escribir.WriteLine(">");
+            EscribirTrad.Write("#include <stdio.h>\n");
+
+            // Saltamos la primera línea para que no se analice de nuevo
+            Leer.ReadLine();
+
             string palabra = "";
-
-
             do
             {
                 if (lookahead != -1)
@@ -167,7 +176,7 @@ namespace Compilador
                     int idxTipo = tipos.IndexOf(palabra);
                     if (idxTipo != -1) // es tipo de dato
                     {
-                        Escribir.WriteLine("tipo: " + palabra);
+                        Escribir.WriteLine("tipo de dato");
                         EscribirTrad.Write(tipos_traduccion[idxTipo] + " ");
                     }
                     else
@@ -175,29 +184,29 @@ namespace Compilador
                         int idx = reservadas.IndexOf(palabra);
                         if (idx != -1) // es palabra reservada
                         {
-                            Escribir.WriteLine("palabra reservada: " + palabra);
+                            Escribir.WriteLine(palabra);
                             EscribirTrad.Write(traducciones[idx] + " ");
                         }
                         else // identificador
                         {
-                            Escribir.WriteLine("identificador: " + palabra);
+                            Escribir.WriteLine("identificador");
                             EscribirTrad.Write(palabra + " ");
                         }
                     }
                 }
                 else if (tipo == 'd') // dígito
                 {
-                    Escribir.WriteLine("digito: " + (char)i_caracter);
+                    Escribir.WriteLine("Numero");
                     EscribirTrad.Write((char)i_caracter);
                 }
                 else if (tipo == 's') // símbolo
                 {
-                    Escribir.WriteLine("simbolo: " + (char)i_caracter);
+                    Escribir.WriteLine((char)i_caracter);
                     EscribirTrad.Write((char)i_caracter);
                 }
                 else if (tipo == 'n') // salto de línea
                 {
-                    Escribir.WriteLine("salto de linea");
+                    Escribir.WriteLine("LF");
                     EscribirTrad.Write("\n");
                     N_linea++;
                 }
@@ -205,7 +214,7 @@ namespace Compilador
                 {
                     bool cerrada;
                     string contenidoCadena = Cadena(out cerrada);
-                    Escribir.WriteLine("cadena:\" " + contenidoCadena + "\"");
+                    Escribir.WriteLine("cadena");
 
                     if (cerrada) //verifica que si se haya cerrado la cadena
                         EscribirTrad.Write("\"" + contenidoCadena + "\"");
@@ -293,10 +302,14 @@ namespace Compilador
                     }
                 }
 
+                else if (tipo == 'b')
+                {
+                    // no hacer nada, fin de archivo
+                }
 
                 else if (i_caracter != -1) // cualquier otro carácter
                 {
-                    Escribir.WriteLine("otro: " + (char)i_caracter);
+                    Escribir.WriteLine((char)i_caracter);
                     EscribirTrad.Write((char)i_caracter);
                 }
                 else if (tipo == 'z')
@@ -311,40 +324,7 @@ namespace Compilador
             Escribir.Close();
             EscribirTrad.Close();
             Leer.Close();
-            }
-            
-            /*------------------------------------------CABECERA-------------------
-            bool Cabecera()
-            {
-                Leer = new StreamReader(archivo);
-                int i_cabecera = Leer.Read();
-
-                if (i_cabecera == 35)
-                {
-                    directiva_procesador();
-                    return true;
-                }
-                else
-                {
-                    Error(i_cabecera);
-                    return false;
-                }
-                    /*switch (i_cabecera)
-                    {
-                        case 35:
-                            directiva_procesador();
-                            break;
-                        default: Error(i_cabecera);
-                            break;
-                    }
-                    return false;
-                }
-
-            void directiva_procesador()
-            {
-                MessageBox.Show("Directiva de preprocesador");
-            }
-        }*/
+        }
 
         private void cOMPILARToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -466,96 +446,7 @@ namespace Compilador
 
 
 
-        private bool Cabecera()
-        {
-            Leer = new StreamReader(archivo);
 
-            // Saltar espacios o saltos de línea iniciales
-            int c;
-            do
-            {
-                c = Leer.Read();
-            } while (c == ' ' || c == '\t' || c == '\r' || c == '\n');
-
-            // 1. Debe comenzar con '#'
-            if (c != '#')
-            {
-                Error(c);
-                MessageBox.Show("Error: El archivo debe comenzar con #include");
-                Leer.Close();
-                return false;
-            }
-
-            // 2. Verificar que lo que sigue sea "include"
-            string palabra = "";
-            int next;
-            while ((next = Leer.Read()) != -1 && char.IsLetter((char)next))
-            {
-                palabra += (char)next;
-            }
-
-            if (palabra != "include")
-            {
-                Error(next);
-                MessageBox.Show("Error: Se esperaba 'include' después de '#'");
-                Leer.Close();
-                return false;
-            }
-
-            // 3. Saltar espacios en blanco
-            while (next == ' ' || next == '\t')
-                next = Leer.Read();
-
-            // 4. Librería entre "" o <>
-            if (next == '"') // include "libreria.h"
-            {
-                string libreria = "";
-                int ch;
-                while ((ch = Leer.Read()) != -1 && ch != '"')
-                {
-                    libreria += (char)ch;
-                }
-
-                if (ch != '"')
-                {
-                    Error(-1);
-                    MessageBox.Show("Error: Falta cerrar comillas en #include");
-                    Leer.Close();
-                    return false;
-                }
-
-                Rtbx_salida.AppendText("Cabecera detectada: include \"" + libreria + "\"\n");
-            }
-            else if (next == '<') // include <libreria.h>
-            {
-                string libreria = "";
-                int ch;
-                while ((ch = Leer.Read()) != -1 && ch != '>')
-                {
-                    libreria += (char)ch;
-                }
-
-                if (ch != '>')
-                {
-                    Error(-1);
-                    MessageBox.Show("Error: Falta cerrar '>' en #include");
-                    Leer.Close();
-                    return false;
-                }
-
-                Rtbx_salida.AppendText("Cabecera detectada: include <" + libreria + ">\n");
-            }
-            else
-            {
-                Error(next);
-                MessageBox.Show("Error: Se esperaba \"\" o <> después de #include");
-                Leer.Close();
-                return false;
-            }
-
-            Leer.Close();
-            return true;
-        }
 
     }
 }
