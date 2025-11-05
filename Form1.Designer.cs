@@ -15,8 +15,11 @@
         public StreamWriter Escribir;
         public StreamReader Leer;
         public int N_error;
-        
         public int prueba = 0;
+        public string token;          // Guarda el token actual leído del archivo .back
+        public StreamReader LeerBack; // Para leer el archivo .back
+        public bool finArchivo;       // Marca si ya se llegó al final del archivo
+
 
         /// <summary>
         ///  Clean up any resources being used.

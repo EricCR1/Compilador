@@ -176,7 +176,7 @@ namespace Compilador
                     int idxTipo = tipos.IndexOf(palabra);
                     if (idxTipo != -1) // es tipo de dato
                     {
-                        Escribir.WriteLine("tipo de dato");
+                        Escribir.WriteLine(palabra);
                         EscribirTrad.Write(tipos_traduccion[idxTipo] + " ");
                     }
                     else
@@ -196,8 +196,20 @@ namespace Compilador
                 }
                 else if (tipo == 'd') // dígito
                 {
+                    string numero = "";
+                    // El carácter actual está en i_caracter
+                    while (i_caracter != -1 && i_caracter >= 48 && i_caracter <= 57) // 0-9
+                    {
+                        numero += (char)i_caracter;
+                        i_caracter = Leer.Read();
+                    }
+
+                    // Dejamos el último char leido (no-dígito) en lookahead para que el bucle principal lo procese
+                    lookahead = i_caracter;
+
+                    // Escribimos un SOLO token "Numero" en el .back y el valor en el .trad
                     Escribir.WriteLine("Numero");
-                    EscribirTrad.Write((char)i_caracter);
+                    EscribirTrad.Write(numero + " ");
                 }
                 else if (tipo == 's') // símbolo
                 {
@@ -304,7 +316,9 @@ namespace Compilador
 
                 else if (tipo == 'b')
                 {
-                    // no hacer nada, fin de archivo
+                    // Espacios y tabs - simplemente los escribimos en el .trad pero no en .back
+                    EscribirTrad.Write((char)i_caracter);
+                    // No escribimos nada en .back para espacios
                 }
 
                 else if (i_caracter != -1) // cualquier otro carácter
@@ -324,7 +338,192 @@ namespace Compilador
             Escribir.Close();
             EscribirTrad.Close();
             Leer.Close();
+
+            //FIN DE ANALISIS LEXICO
+
+            Rtbx_salida.AppendText("\n--- Análisis léxico finalizado. Iniciando análisis sintáctico ---\n");
+
+            LeerBack = new StreamReader(archivoback);
+            finArchivo = false;
+            SiguienteToken(); // leer primer token
+
+            try
+            {
+                Declaracion();
+                if (!finArchivo)
+                    Rtbx_salida.AppendText("Análisis sintáctico completado correctamente.\n");
+            }
+            catch (Exception ex)
+            {
+                Rtbx_salida.AppendText("Error sintáctico: " + ex.Message + "\n");
+            }
+
+            LeerBack.Close();
         }
+        private void SiguienteToken()
+        {
+            do
+            {
+                if (LeerBack == null || LeerBack.EndOfStream)
+                {
+                    finArchivo = true;
+                    token = "EOF";
+                    return;
+                }
+                else
+                {
+                    token = LeerBack.ReadLine()?.Trim() ?? "EOF";
+                }
+            } while (string.IsNullOrEmpty(token)); // Ignorar líneas vacías
+        }
+        private void Declaracion()
+        {
+            while (!finArchivo && token != "EOF")
+            {
+                // Cambiar de "tipo de dato" a verificar los tipos específicos
+                if (token == "int" || token == "float" || token == "double" ||
+                    token == "char" || token == "void" || token == "bool")
+                {
+                    SiguienteToken();
+                    VariableGlobal();
+                }
+                else
+                {
+                    // Si no es tipo de dato, pasamos al siguiente token
+                    SiguienteToken();
+                }
+            }
+        }
+
+        private void VariableGlobal()
+        {
+            // Ahora puede ser "identificador" O "main" (porque main está en palabras reservadas)
+            if (token != "identificador" && token != "main")
+                throw new Exception("Se esperaba un identificador.");
+
+            // Guardar el nombre del identificador
+            string nombreIdentificador = token;
+            SiguienteToken();
+
+            // Verificar si es la función main
+            if (nombreIdentificador == "main" && token == "(")
+            {
+                Rtbx_salida.AppendText("Se detectó main\n");
+                return; // Salimos de la función
+            }
+
+            // Si no es main, continuar con variable global normal
+            if (token == "=")
+            {
+                SiguienteToken();
+                Constante();
+            }
+            else if (token == "[")
+            {
+                SiguienteToken();
+                Arreglo();
+                // Después de Arreglo(), el token actual debería ser ';'
+            }
+
+            // Esta verificación se hace para todos los casos
+            if (token == ";")
+            {
+                Rtbx_salida.AppendText("Declaración de variable global correcta.\n");
+                SiguienteToken();
+            }
+            else
+            {
+                throw new Exception("Falta ';' al final de la declaración.");
+            }
+        }
+
+        private void Constante()
+        {
+            if (token == "Numero" || token == "cadena" || token == "identificador")
+            {
+                SiguienteToken();
+            }
+            else
+            {
+                throw new Exception("Se esperaba una constante o identificador en la asignación.");
+            }
+        }
+
+        private void Arreglo()
+        {
+            if (token != "Numero")
+                throw new Exception("Se esperaba un número dentro de los corchetes del arreglo.");
+
+            SiguienteToken();
+
+            if (token != "]")
+                throw new Exception("Falta ']' en la declaración del arreglo.");
+
+            SiguienteToken();  // Consume el ']'
+
+            // Verificar si hay inicialización después del arreglo
+            if (token == "=")
+            {
+                SiguienteToken();
+                InicializacionArreglo();
+            }
+
+            // NO llamar SiguienteToken() aquí - dejar que VariableGlobal() maneje el ';'
+        }
+
+        private void InicializacionArreglo()
+{
+    // Debe empezar con {
+    if (token != "{")
+        throw new Exception("Se esperaba '{' para inicialización del arreglo.");
+
+    SiguienteToken();
+    
+    bool primerElemento = true;
+    bool esperaElemento = true;
+
+    while (token != "}" && !finArchivo && token != "EOF")
+    {
+        if (!esperaElemento)
+        {
+            // Debe haber una coma entre elementos
+            if (token != ",")
+                throw new Exception("Falta ',' entre elementos del arreglo.");
+            
+            SiguienteToken();
+            esperaElemento = true;
+        }
+
+        if (esperaElemento)
+        {
+            // Puede ser un número, cadena, o otro arreglo
+            if (token == "Numero" || token == "cadena" || token == "identificador")
+            {
+                SiguienteToken();
+                esperaElemento = false;
+                primerElemento = false;
+            }
+            else if (token == "{")
+            {
+                // Arreglo multidimensional - procesar sub-arreglo
+                InicializacionArreglo();
+                esperaElemento = false;
+                primerElemento = false;
+            }
+            else
+            {
+                throw new Exception("Se esperaba un elemento válido para el arreglo.");
+            }
+        }
+    }
+
+    // Verificar que termine con }
+    if (token != "}")
+        throw new Exception("Falta '}' al final de la inicialización del arreglo.");
+
+    SiguienteToken(); // Consumir el }
+}
+
 
         private void cOMPILARToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -378,10 +577,10 @@ namespace Compilador
             do
             {
                 i_caracter = Leer.Read();
-                if (i_caracter == 10) N_linea++; //ASCI 10 = SALTO DE LINEA
+                if (i_caracter == 10) N_linea++; //ASCII 10 = SALTO DE LINEA
                 if (i_caracter != 34 && i_caracter != -1) // ASCII fin de cadena 34 y fin de archivo -1
                 {
-                    contenido += (char)i_caracter; // acumula el carácter (se va formando la cadena)
+                    contenido += (char)i_caracter; // acumula el carácter
                 }
             } while (i_caracter != 34 && i_caracter != -1);
 
@@ -393,6 +592,9 @@ namespace Compilador
             {
                 Error(-1); // cadena sin cerrar
             }
+
+            // IMPORTANTE: Resetear lookahead después de procesar cadena
+            lookahead = -1;
 
             return contenido;
         }
