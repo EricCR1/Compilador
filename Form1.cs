@@ -1,4 +1,4 @@
-using System.IO;
+Ôªøusing System.IO;
 using System.Runtime.Intrinsics.X86;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 namespace Compilador
@@ -17,7 +17,7 @@ namespace Compilador
         private void richTextBox1_TextChanged(object sender, EventArgs e)
         {
             cOMPILARToolStripMenuItem.Enabled = true;
-            // habilita la opciÛn compilar cuando se realiza un cambio en el texto.
+            // habilita la opci√≥n compilar cuando se realiza un cambio en el texto.
         }
 
 
@@ -110,22 +110,22 @@ namespace Compilador
         private void aNALIZARToolStripMenuItem_Click(object sender, EventArgs e)
         {
             guardar();
-            archivoback = archivo.Remove(archivo.Length - 1) + "back"; //extensiÛn .back    
-            archivotrad = archivo.Remove(archivo.Length - 1) + "trad"; //extensiÛn .trad
+            archivoback = archivo.Remove(archivo.Length - 1) + "back"; //extensi√≥n .back    
+            archivotrad = archivo.Remove(archivo.Length - 1) + "trad"; //extensi√≥n .trad
             N_error = 0;
             N_linea = 1;
             Rtbx_salida.Clear();
-            // ====== VERIFICACI”N DE CABECERA ======
+            // ====== VERIFICACI√ìN DE CABECERA ======
             string primeraLinea = File.ReadLines(archivo).FirstOrDefault()?.Trim() ?? "";
 
             if (!primeraLinea.Equals("#include <stdio.h>"))
             {
                 Rtbx_salida.AppendText("Error: El archivo debe iniciar con #include <stdio.h>\n");
                 Error(-1);
-                return; // detiene el an·lisis
+                return; // detiene el an√°lisis
             }
 
-            // Si la cabecera est· bien, la registramos manualmente con la excepciÛn del punto
+            // Si la cabecera est√° bien, la registramos manualmente con la excepci√≥n del punto
             Rtbx_salida.AppendText("Cabecera detectada correctamente.\n");
 
             Escribir = new StreamWriter(archivoback);
@@ -140,7 +140,7 @@ namespace Compilador
             Escribir.WriteLine(">");
             EscribirTrad.Write("#include <stdio.h>\n");
 
-            // Saltamos la primera lÌnea para que no se analice de nuevo
+            // Saltamos la primera l√≠nea para que no se analice de nuevo
             Leer.ReadLine();
 
             string palabra = "";
@@ -194,29 +194,29 @@ namespace Compilador
                         }
                     }
                 }
-                else if (tipo == 'd') // dÌgito
+                else if (tipo == 'd') // d√≠gito
                 {
                     string numero = "";
-                    // El car·cter actual est· en i_caracter
+                    // El car√°cter actual est√° en i_caracter
                     while (i_caracter != -1 && i_caracter >= 48 && i_caracter <= 57) // 0-9
                     {
                         numero += (char)i_caracter;
                         i_caracter = Leer.Read();
                     }
 
-                    // Dejamos el ˙ltimo char leido (no-dÌgito) en lookahead para que el bucle principal lo procese
+                    // Dejamos el √∫ltimo char leido (no-d√≠gito) en lookahead para que el bucle principal lo procese
                     lookahead = i_caracter;
 
                     // Escribimos un SOLO token "Numero" en el .back y el valor en el .trad
                     Escribir.WriteLine("Numero");
                     EscribirTrad.Write(numero + " ");
                 }
-                else if (tipo == 's') // sÌmbolo
+                else if (tipo == 's') // s√≠mbolo
                 {
                     Escribir.WriteLine((char)i_caracter);
                     EscribirTrad.Write((char)i_caracter);
                 }
-                else if (tipo == 'n') // salto de lÌnea
+                else if (tipo == 'n') // salto de l√≠nea
                 {
                     Escribir.WriteLine("LF");
                     EscribirTrad.Write("\n");
@@ -239,7 +239,7 @@ namespace Compilador
                 else if (tipo == 'j')
                 {
                     int siguiente = Leer.Read();
-                    if (siguiente == '/') // comentario de lÌnea
+                    if (siguiente == '/') // comentario de l√≠nea
                     {
                         string comentario = "";
                         while (siguiente != '\n' && siguiente != -1)
@@ -271,7 +271,7 @@ namespace Compilador
                         // no era comentario, solo era '/'
                         Escribir.WriteLine("simbolo: /");
                         EscribirTrad.Write("/");
-                        i_caracter = siguiente; // regresamos el ˙ltimo caracter leÌdo al flujo
+                        i_caracter = siguiente; // regresamos el √∫ltimo caracter le√≠do al flujo
                     }
                 }
 
@@ -294,7 +294,7 @@ namespace Compilador
                     {
                         Escribir.WriteLine("simbolo: &");
                         EscribirTrad.Write("&");
-                        i_caracter = siguiente; // devolvemos el caracter que se adelantÛ
+                        i_caracter = siguiente; // devolvemos el caracter que se adelant√≥
                     }
                 }
 
@@ -310,7 +310,7 @@ namespace Compilador
                     {
                         Escribir.WriteLine("simbolo: |");
                         EscribirTrad.Write("|");
-                        i_caracter = siguiente; // devolvemos el caracter que se adelantÛ
+                        i_caracter = siguiente; // devolvemos el caracter que se adelant√≥
                     }
                 }
 
@@ -321,7 +321,7 @@ namespace Compilador
                     // No escribimos nada en .back para espacios
                 }
 
-                else if (i_caracter != -1) // cualquier otro car·cter
+                else if (i_caracter != -1) // cualquier otro car√°cter
                 {
                     Escribir.WriteLine((char)i_caracter);
                     EscribirTrad.Write((char)i_caracter);
@@ -341,7 +341,7 @@ namespace Compilador
 
             //FIN DE ANALISIS LEXICO
 
-            Rtbx_salida.AppendText("\n--- An·lisis lÈxico finalizado. Iniciando an·lisis sint·ctico ---\n");
+            Rtbx_salida.AppendText("\n--- An√°lisis l√©xico finalizado. Iniciando an√°lisis sint√°ctico ---\n");
 
             LeerBack = new StreamReader(archivoback);
             finArchivo = false;
@@ -351,11 +351,11 @@ namespace Compilador
             {
                 Declaracion();
                 if (!finArchivo)
-                    Rtbx_salida.AppendText("An·lisis sint·ctico completado correctamente.\n");
+                    Rtbx_salida.AppendText("An√°lisis sint√°ctico completado correctamente.\n");
             }
             catch (Exception ex)
             {
-                Rtbx_salida.AppendText("Error sint·ctico: " + ex.Message + "\n");
+                Rtbx_salida.AppendText("Error sint√°ctico: " + ex.Message + "\n");
             }
 
             LeerBack.Close();
@@ -374,19 +374,28 @@ namespace Compilador
                 {
                     token = LeerBack.ReadLine()?.Trim() ?? "EOF";
                 }
-            } while (string.IsNullOrEmpty(token)); // Ignorar lÌneas vacÌas
+            } while (string.IsNullOrEmpty(token)); // Ignorar l√≠neas vac√≠as
         }
         private void Declaracion()
         {
             while (!finArchivo && token != "EOF")
             {
-                // Cambiar de "tipo de dato" a verificar los tipos especÌficos
+                // Cambiar de "tipo de dato" a verificar los tipos espec√≠ficos
                 if (token == "int" || token == "float" || token == "double" ||
                     token == "char" || token == "void" || token == "bool")
                 {
+
                     SiguienteToken();
                     VariableGlobal();
                 }
+
+               else if (token == "If" || token == "Switch" || token == "For" || token == "do" || token == "While")
+                {
+
+                    SiguienteToken();
+                    EstructuraControl();
+                }
+
                 else
                 {
                     // Si no es tipo de dato, pasamos al siguiente token
@@ -397,7 +406,7 @@ namespace Compilador
 
         private void VariableGlobal()
         {
-            // Ahora puede ser "identificador" O "main" (porque main est· en palabras reservadas)
+            // Ahora puede ser "identificador" O "main" (porque main est√° en palabras reservadas)
             if (token != "identificador" && token != "main")
                 throw new Exception("Se esperaba un identificador.");
 
@@ -405,11 +414,12 @@ namespace Compilador
             string nombreIdentificador = token;
             SiguienteToken();
 
-            // Verificar si es la funciÛn main
+            // Verificar si es la funci√≥n main
             if (nombreIdentificador == "main" && token == "(")
             {
-                Rtbx_salida.AppendText("Se detectÛ main\n");
-                return; // Salimos de la funciÛn
+                Rtbx_salida.AppendText("Se detect√≥ main\n");
+                FuncionMain();
+                return;
             }
 
             // Si no es main, continuar con variable global normal
@@ -422,21 +432,226 @@ namespace Compilador
             {
                 SiguienteToken();
                 Arreglo();
-                // DespuÈs de Arreglo(), el token actual deberÌa ser ';'
+                // Despu√©s de Arreglo(), el token actual deber√≠a ser ';'
             }
 
-            // Esta verificaciÛn se hace para todos los casos
+            // Esta verificaci√≥n se hace para todos los casos
             if (token == ";")
             {
-                Rtbx_salida.AppendText("DeclaraciÛn de variable global correcta.\n");
+                Rtbx_salida.AppendText("Declaraci√≥n de variable global correcta.\n");
                 SiguienteToken();
             }
             else
             {
-                throw new Exception("Falta ';' al final de la declaraciÛn.");
+                throw new Exception("Falta ';' al final de la declaraci√≥n.");
             }
         }
 
+        private void FuncionMain()
+        {
+            if (token != "(")
+                throw new Exception("Se esperaba '(' despu√©s de main.");
+
+            SiguienteToken();
+
+            if (token != ")")
+                throw new Exception("Se esperaba ')' en main.");
+
+            SiguienteToken();
+
+           CuerpoFuncion();
+
+            Rtbx_salida.AppendText("Funci√≥n main analizada correctamente.\n");
+        }
+
+        private void CuerpoFuncion()
+        {
+            if (token != "{")
+                throw new Exception("Se esperaba '{'.");
+
+            SiguienteToken();
+
+            while (token != "}" && !finArchivo && token != "EOF")
+            {
+                if (token == "if")
+                {
+                    CondicionalSimple();
+                }
+                else if (token == "switch")
+                {
+                    SeleccionMultiple();
+                }
+                else if (token == "for")
+                {
+                    CicloPara();
+                }
+                else if (token == "while")
+                {
+                    CicloMientras();
+                }
+                else if (token == "do")
+                {
+                    CicloRepetirMientras();
+                }
+                else if (token == "return")
+                {
+                    SentenciaReturn();
+                }
+                else if (token == "printf" || token == "identificador")
+                {
+                    Sentencia();
+                }
+                else if (token == "{")
+                {
+                    CuerpoFuncion();
+                }
+                else if (token == "break" || token == "continue")
+                {
+                    SiguienteToken();
+                    if (token != ";")
+                        throw new Exception("Se esperaba ';'.");
+                    SiguienteToken();
+                }
+                else
+                {
+                    SiguienteToken();
+                }
+            }
+
+            if (token != "}")
+                throw new Exception("Se esperaba '}'.");
+
+            SiguienteToken();
+        }
+
+        private void CondicionalSimple()
+        {
+            Rtbx_salida.AppendText("Analizando if...\n");
+
+            SiguienteToken(); // consume 'if'
+
+            if (token != "(")
+                throw new Exception("Se esperaba '(' despu√©s de if.");
+            SiguienteToken();
+
+            // Aqu√≠ buscamos "condicion" como identificador
+            if (token != "identificador")
+                throw new Exception("Se esperaba condici√≥n en if.");
+
+            SiguienteToken();
+
+            if (token != ")")
+                throw new Exception("Se esperaba ')' despu√©s de la condici√≥n.");
+            SiguienteToken();
+
+            // Cuerpo del if
+            if (token == "{")
+            {
+                CuerpoFuncion();
+            }
+            else
+            {
+                // Sentencia simple
+                Sentencia();
+            }
+
+            // Verificar else
+            if (token == "else")
+            {
+                Rtbx_salida.AppendText("Detectado else (condicional compuesta)...\n");
+                SiguienteToken();
+
+                if (token == "{")
+                {
+                    CuerpoFuncion();
+                }
+                else
+                {
+                    Sentencia();
+                }
+            }
+
+            Rtbx_salida.AppendText("Condicional analizada correctamente.\n");
+        }
+
+
+        // Sentencia gen√©rica
+        private void Sentencia()
+        {
+            string id = token;
+            SiguienteToken();
+
+            if (token == "(")
+            {
+                // Llamada a funci√≥n
+                LlamadaFuncion();
+                if (token != ";")
+                    throw new Exception("Se esperaba ';'.");
+                SiguienteToken();
+            }
+            else if (token == "=")
+            {
+                // Asignaci√≥n
+                SiguienteToken();
+                if (token == "Numero" || token == "cadena" || token == "identificador")
+                {
+                    SiguienteToken();
+                }
+                if (token != ";")
+                    throw new Exception("Se esperaba ';'.");
+                SiguienteToken();
+            }
+            else if (token == "[")
+            {
+                // Asignaci√≥n a arreglo
+                SiguienteToken();
+                if (token == "Numero" || token == "identificador")
+                {
+                    SiguienteToken();
+                }
+                if (token != "]")
+                    throw new Exception("Se esperaba ']'.");
+                SiguienteToken();
+                if (token == "=")
+                {
+                    SiguienteToken();
+                    if (token == "Numero" || token == "cadena" || token == "identificador")
+                    {
+                        SiguienteToken();
+                    }
+                }
+                if (token != ";")
+                    throw new Exception("Se esperaba ';'.");
+                SiguienteToken();
+            }
+        }
+
+        private void LlamadaFuncion()
+        {
+            SiguienteToken(); // consume '('
+
+            // Argumentos
+            if (token != ")")
+            {
+                if (token == "Numero" || token == "cadena" || token == "identificador")
+                {
+                    SiguienteToken();
+                }
+
+                while (token == ",")
+                {
+                    SiguienteToken();
+                    if (token == "Numero" || token == "cadena" || token == "identificador")
+                    {
+                        SiguienteToken();
+                    }
+                }
+            }
+
+            if (token != ")")
+                throw new Exception("Se esperaba ')' al final de la llamada.");
+            SiguienteToken();
+        }
         private void Constante()
         {
             if (token == "Numero" || token == "cadena" || token == "identificador")
@@ -445,84 +660,90 @@ namespace Compilador
             }
             else
             {
-                throw new Exception("Se esperaba una constante o identificador en la asignaciÛn.");
+                throw new Exception("Se esperaba una constante o identificador en la asignaci√≥n.");
             }
         }
 
         private void Arreglo()
         {
             if (token != "Numero")
-                throw new Exception("Se esperaba un n˙mero dentro de los corchetes del arreglo.");
+                throw new Exception("Se esperaba un n√∫mero dentro de los corchetes del arreglo.");
 
             SiguienteToken();
 
             if (token != "]")
-                throw new Exception("Falta ']' en la declaraciÛn del arreglo.");
+                throw new Exception("Falta ']' en la declaraci√≥n del arreglo.");
 
             SiguienteToken();  // Consume el ']'
 
-            // Verificar si hay inicializaciÛn despuÈs del arreglo
+            // Verificar si hay inicializaci√≥n despu√©s del arreglo
             if (token == "=")
             {
                 SiguienteToken();
                 InicializacionArreglo();
             }
+            else if (token == "[") 
+            {
+                // Arreglo multidimensional
+                SiguienteToken();
+                Arreglo(); // Llamada recursiva para manejar m√°s dimensiones
+            }
 
-            // NO llamar SiguienteToken() aquÌ - dejar que VariableGlobal() maneje el ';'
+            // NO llamar SiguienteToken() aqu√≠ - dejar que VariableGlobal() maneje el ';'
         }
 
         private void InicializacionArreglo()
-{
-    // Debe empezar con {
-    if (token != "{")
-        throw new Exception("Se esperaba '{' para inicializaciÛn del arreglo.");
-
-    SiguienteToken();
-    
-    bool primerElemento = true;
-    bool esperaElemento = true;
-
-    while (token != "}" && !finArchivo && token != "EOF")
-    {
-        if (!esperaElemento)
         {
-            // Debe haber una coma entre elementos
-            if (token != ",")
-                throw new Exception("Falta ',' entre elementos del arreglo.");
-            
+            // Debe empezar con {
+            if (token != "{")
+                throw new Exception("Se esperaba '{' para inicializaci√≥n del arreglo.");
+
             SiguienteToken();
-            esperaElemento = true;
+
+            bool primerElemento = true;
+            bool esperaElemento = true;
+
+            while (token != "}" && !finArchivo && token != "EOF")
+            {
+                if (!esperaElemento)
+                {
+                    // Debe haber una coma entre elementos
+                    if (token != ",")
+                        throw new Exception("Falta ',' entre elementos del arreglo.");
+
+                    SiguienteToken();
+                    esperaElemento = true;
+                }
+
+                if (esperaElemento)
+                {
+                    // Puede ser un n√∫mero, cadena, o otro arreglo
+                    if (token == "Numero" || token == "cadena" || token == "identificador")
+                    {
+                        SiguienteToken();
+                        esperaElemento = false;
+                        primerElemento = false;
+                    }
+                    else if (token == "{")
+                    {
+                        // Arreglo multidimensional - procesar sub-arreglo
+                        InicializacionArreglo();
+                        esperaElemento = false;
+                        primerElemento = false;
+                    }
+                    else
+                    {
+                        throw new Exception("Se esperaba un elemento v√°lido para el arreglo.");
+                    }
+                }
+            }
+
+            // Verificar que termine con }
+            if (token != "}")
+                throw new Exception("Falta '}' al final de la inicializaci√≥n del arreglo.");
+
+            SiguienteToken(); // Consumir el }
         }
-
-        if (esperaElemento)
-        {
-            // Puede ser un n˙mero, cadena, o otro arreglo
-            if (token == "Numero" || token == "cadena" || token == "identificador")
-            {
-                SiguienteToken();
-                esperaElemento = false;
-                primerElemento = false;
-            }
-            else if (token == "{")
-            {
-                // Arreglo multidimensional - procesar sub-arreglo
-                InicializacionArreglo();
-                esperaElemento = false;
-                primerElemento = false;
-            }
-            else
-            {
-                throw new Exception("Se esperaba un elemento v·lido para el arreglo.");
-            }
-        }
-    }
-
-    // Verificar que termine con }
-    if (token != "}")
-        throw new Exception("Falta '}' al final de la inicializaciÛn del arreglo.");
-
-    SiguienteToken(); // Consumir el }
-}
 
 
         private void cOMPILARToolStripMenuItem_Click(object sender, EventArgs e)
@@ -538,7 +759,7 @@ namespace Compilador
 
             else if (caracter >= 48 && caracter <= 57)
             {
-                return 'd'; // DÌgito
+                return 'd'; // D√≠gito
             }
 
             else if (caracter >= 60 && caracter <= 62)
@@ -580,28 +801,42 @@ namespace Compilador
                 if (i_caracter == 10) N_linea++; //ASCII 10 = SALTO DE LINEA
                 if (i_caracter != 34 && i_caracter != -1) // ASCII fin de cadena 34 y fin de archivo -1
                 {
-                    contenido += (char)i_caracter; // acumula el car·cter
+                    contenido += (char)i_caracter; // acumula el car√°cter
                 }
             } while (i_caracter != 34 && i_caracter != -1);
 
             if (i_caracter == 34)
             {
-                cerrada = true; // sÌ se cerrÛ correctamente
+                cerrada = true; // s√≠ se cerr√≥ correctamente
             }
             else
             {
                 Error(-1); // cadena sin cerrar
             }
 
-            // IMPORTANTE: Resetear lookahead despuÈs de procesar cadena
+            // IMPORTANTE: Resetear lookahead despu√©s de procesar cadena
             lookahead = -1;
 
             return contenido;
         }
         private void Error(int i_caracter)
         {
-            Rtbx_salida.AppendText("Error lÈxico " + i_caracter + ", lÌnea " + N_linea + "\n");
+            Rtbx_salida.AppendText("Error l√©xico " + i_caracter + ", l√≠nea " + N_linea + "\n");
             N_error++;
+        }
+
+
+        private void EstructuraControl()
+        {
+            //if (token == "If" || token == "Switch" || token == "For" || token == "do" || token == "While")
+            //{
+            Rtbx_salida.AppendText("Se detecto estructura de control\n");
+            //    //SiguienteToken();
+            //}
+            //else
+            //{
+            //    throw new Exception("Se esperaba una constante o identificador en la asignaci√≥n.");
+            //}
         }
 
 
@@ -620,19 +855,19 @@ namespace Compilador
             "typeid","typename","using","virtual","wchar_t","main","include","define","printf"
         };
 
-        // Traducciones en espaÒol (mismo orden que la lista de arriba)
+        // Traducciones en espa√±ol (mismo orden que la lista de arriba)
         List<string> traducciones = new List<string>
         {
             "auto","romper","caso","constante","continuar","defecto","hacer",
-            "sino","enumeraciÛn","externo","para","ir","si","en lÌnea","entero","largo",
-            "registro","restringido","retornar","corto","con signo","tamaÒo de","est·tico","estructura",
-            "selecciÛn","definir tipo","uniÛn","sin signo","vol·til","mientras",
-            "alinear como","alineaciÛn de","atÛmico","booleano","complejo","genÈrico","imaginario",
-            "sin retorno","afirmaciÛn est·tica","hilo local","ensamblador","capturar","clase",
-            "conversiÛn constante","eliminar","conversiÛn din·mica","explÌcito","exportar","falso","amigo",
-            "mutable","espacio de nombres","nuevo","operador","privado","protegido","p˙blico",
-            "conversiÛn reinterpretada","conversiÛn est·tica","plantilla","este","lanzar","verdadero","intentar",
-            "tipoid","nombre de tipo","usando","virtual","car·cter ancho","principal","incluir","definir","imprimir"
+            "sino","enumeraci√≥n","externo","para","ir","si","en l√≠nea","entero","largo",
+            "registro","restringido","retornar","corto","con signo","tama√±o de","est√°tico","estructura",
+            "selecci√≥n","definir tipo","uni√≥n","sin signo","vol√°til","mientras",
+            "alinear como","alineaci√≥n de","at√≥mico","booleano","complejo","gen√©rico","imaginario",
+            "sin retorno","afirmaci√≥n est√°tica","hilo local","ensamblador","capturar","clase",
+            "conversi√≥n constante","eliminar","conversi√≥n din√°mica","expl√≠cito","exportar","falso","amigo",
+            "mutable","espacio de nombres","nuevo","operador","privado","protegido","p√∫blico",
+            "conversi√≥n reinterpretada","conversi√≥n est√°tica","plantilla","este","lanzar","verdadero","intentar",
+            "tipoid","nombre de tipo","usando","virtual","car√°cter ancho","principal","incluir","definir","imprimir"
         };
 
         List<string> tipos = new List<string>
@@ -646,9 +881,287 @@ namespace Compilador
             "int","float","double","char","void","bool"
         };
 
+        private void SeleccionMultiple()
+        {
+            Rtbx_salida.AppendText("Analizando switch...\n");
 
+            SiguienteToken(); // consume 'switch'
 
+            if (token != "(")
+                throw new Exception("Se esperaba '(' despu√©s de switch.");
+            SiguienteToken();
 
+            if (token != "identificador" && token != "Numero")
+                throw new Exception("Se esperaba variable en switch.");
+            SiguienteToken();
 
+            if (token != ")")
+                throw new Exception("Se esperaba ')' en switch.");
+            SiguienteToken();
+
+            if (token != "{")
+                throw new Exception("Se esperaba '{' en switch.");
+            SiguienteToken();
+
+            // Procesar cases
+            while ((token == "case" || token == "default") && !finArchivo)
+            {
+                if (token == "case")
+                {
+                    SiguienteToken();
+
+                    if (token != "Numero" && token != "identificador" && token != "cadena")
+                        throw new Exception("Se esperaba valor en case.");
+                    SiguienteToken();
+
+                    if (token != ":")
+                        throw new Exception("Se esperaba ':' despu√©s del case.");
+                    SiguienteToken();
+
+                    // Sentencias del case
+                    while (token != "case" && token != "default" && token != "}" && token != "break" && !finArchivo)
+                    {
+                        if (token == "printf" || token == "identificador")
+                        {
+                            Sentencia();
+                        }
+                        else if (token == "if" || token == "for" || token == "while")
+                        {
+                            // Permitir estructuras dentro del case
+                            if (token == "if") CondicionalSimple();
+                            else if (token == "for") CicloPara();
+                            else if (token == "while") CicloMientras();
+                        }
+                        else
+                        {
+                            SiguienteToken();
+                        }
+                    }
+
+                    if (token == "break")
+                    {
+                        SiguienteToken();
+                        if (token != ";")
+                            throw new Exception("Se esperaba ';' despu√©s de break.");
+                        SiguienteToken();
+                    }
+                }
+                else if (token == "default")
+                {
+                    SiguienteToken();
+
+                    if (token != ":")
+                        throw new Exception("Se esperaba ':' despu√©s de default.");
+                    SiguienteToken();
+
+                    // Sentencias del default
+                    while (token != "}" && token != "break" && !finArchivo)
+                    {
+                        if (token == "printf" || token == "identificador")
+                        {
+                            Sentencia();
+                        }
+                        else
+                        {
+                            SiguienteToken();
+                        }
+                    }
+
+                    if (token == "break")
+                    {
+                        SiguienteToken();
+                        if (token != ";")
+                            throw new Exception("Se esperaba ';' despu√©s de break.");
+                        SiguienteToken();
+                    }
+                }
+            }
+
+            if (token != "}")
+                throw new Exception("Se esperaba '}' al final del switch.");
+            SiguienteToken();
+
+            Rtbx_salida.AppendText("Switch analizado correctamente.\n");
+        }
+
+        // 3. CICLO FOR
+        private void CicloPara()
+        {
+            Rtbx_salida.AppendText("Analizando for...\n");
+
+            SiguienteToken(); // consume 'for'
+
+            if (token != "(")
+                throw new Exception("Se esperaba '(' despu√©s de for.");
+            SiguienteToken();
+
+            // Inicializaci√≥n (puede incluir tipo de dato)
+            if (token == "int" || token == "float" || token == "double")
+            {
+                SiguienteToken();
+            }
+
+            if (token == "identificador")
+            {
+                SiguienteToken();
+                if (token == "=")
+                {
+                    SiguienteToken();
+                    if (token == "Numero" || token == "identificador")
+                    {
+                        SiguienteToken();
+                    }
+                }
+            }
+
+            if (token != ";")
+                throw new Exception("Se esperaba ';' despu√©s de la inicializaci√≥n.");
+            SiguienteToken();
+
+            // Condici√≥n
+            if (token != ";")
+            {
+                // Simplificado: esperar identificador
+                if (token == "identificador" || token == "Numero")
+                {
+                    SiguienteToken();
+                }
+                // Operador
+                if (token == "<" || token == ">" || token == "=" || token == "!")
+                {
+                    SiguienteToken();
+                    if (token == "=") SiguienteToken();
+                }
+                if (token == "identificador" || token == "Numero")
+                {
+                    SiguienteToken();
+                }
+            }
+
+            if (token != ";")
+                throw new Exception("Se esperaba ';' despu√©s de la condici√≥n.");
+            SiguienteToken();
+
+            // Incremento
+            if (token != ")")
+            {
+                if (token == "identificador")
+                {
+                    SiguienteToken();
+                    if (token == "+" || token == "-")
+                    {
+                        SiguienteToken();
+                        if (token == "+" || token == "-") SiguienteToken();
+                    }
+                }
+            }
+
+            if (token != ")")
+                throw new Exception("Se esperaba ')' en for.");
+            SiguienteToken();
+
+            // Cuerpo
+            if (token == "{")
+            {
+                CuerpoFuncion();
+            }
+            else
+            {
+                Sentencia();
+            }
+
+            Rtbx_salida.AppendText("For analizado correctamente.\n");
+        }
+        private void CicloMientras()
+        {
+            Rtbx_salida.AppendText("Analizando while...\n");
+
+            SiguienteToken(); // consume 'while'
+
+            if (token != "(")
+                throw new Exception("Se esperaba '(' despu√©s de while.");
+            SiguienteToken();
+
+            // Condici√≥n simplificada
+            if (token != "identificador")
+                throw new Exception("Se esperaba condici√≥n en while.");
+            SiguienteToken();
+
+            if (token != ")")
+                throw new Exception("Se esperaba ')' despu√©s de la condici√≥n.");
+            SiguienteToken();
+
+            // Cuerpo
+            if (token == "{")
+            {
+                CuerpoFuncion();
+            }
+            else
+            {
+                Sentencia();
+            }
+
+            Rtbx_salida.AppendText("While analizado correctamente.\n");
+        }
+
+        private void CicloRepetirMientras()
+        {
+            Rtbx_salida.AppendText("Analizando do-while...\n");
+
+            SiguienteToken(); // consume 'do'
+
+            // Cuerpo
+            if (token == "{")
+            {
+                CuerpoFuncion();
+            }
+            else
+            {
+                Sentencia();
+            }
+
+            if (token != "while")
+                throw new Exception("Se esperaba 'while' despu√©s del cuerpo del do.");
+            SiguienteToken();
+
+            if (token != "(")
+                throw new Exception("Se esperaba '(' despu√©s de while.");
+            SiguienteToken();
+
+            // Condici√≥n
+            if (token != "identificador")
+                throw new Exception("Se esperaba condici√≥n en do-while.");
+            SiguienteToken();
+
+            if (token != ")")
+                throw new Exception("Se esperaba ')' despu√©s de la condici√≥n.");
+            SiguienteToken();
+
+            if (token != ";")
+                throw new Exception("Se esperaba ';' al final del do-while.");
+            SiguienteToken();
+
+            Rtbx_salida.AppendText("Do-while analizado correctamente.\n");
+        }
+
+        // Return
+        private void SentenciaReturn()
+        {
+            SiguienteToken(); // consume 'return'
+
+            if (token != ";")
+            {
+                if (token == "Numero" || token == "identificador" || token == "cadena")
+                {
+                    SiguienteToken();
+                }
+            }
+
+            if (token != ";")
+                throw new Exception("Se esperaba ';' despu√©s de return.");
+            SiguienteToken();
+        }
     }
+
+
 }
