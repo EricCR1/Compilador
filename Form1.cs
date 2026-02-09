@@ -547,37 +547,46 @@ namespace Compilador
 
         private void EstructuraFuncion()
         {
-            
-            if (token != "int" && token != "float" && token != "double" &&
-                    token != "char" && token != "void" && token != "bool" && token != ")") {
-                throw new Exception("Se esperaba un tipo de dato para un parametro o cierre de )");
-            }
-            SiguienteToken();
-            if (token != "identificador")
+            // 1. Procesar parámetros en un bucle (no recursivo)
+            while (token != ")" && !finArchivo)
             {
-                Rtbx_salida.AppendText("Se esperaba un identificador como parametro");
-            }
-            SiguienteToken();
+                if (token == "int" || token == "float" || token == "double" ||
+                    token == "char" || token == "void" || token == "bool")
+                {
+                    SiguienteToken(); // Consume el tipo
+                    if (token != "identificador")
+                        throw new Exception("Se esperaba un identificador como parámetro.");
 
-            if (token != ")" && token != ",")
-            {
-                throw new Exception("Se esperaba ')' después de los parámetros de la función.");
+                    SiguienteToken(); // Consume el identificador
+
+                    if (token == ",")
+                    {
+                        SiguienteToken(); // Consume la coma y sigue el bucle
+                        continue;
+                    }
+                }
+                else if (token == "LF")
+                {
+                    SiguienteToken();
+                }
+                else if (token != ")")
+                {
+                    throw new Exception("Se esperaba tipo de dato o cierre de paréntesis.");
+                }
             }
 
-            if (token == ",")
-            {
-                SiguienteToken();
-                EstructuraFuncion(); // Llamada recursiva para manejar múltiples parámetros
-            }
+            // 2. Validar cierre de paréntesis
+            if (token != ")")
+                throw new Exception("Se esperaba ')' al final de los parámetros.");
 
-            if (token == ")")
-            {
-                Rtbx_salida.AppendText("Cierre correcto de funcion");
-            }
-            SiguienteToken();
+            Rtbx_salida.AppendText("Cierre correcto de parámetros\n");
+            SiguienteToken(); // Consume el ')'
+
+            // 3. Procesar el cuerpo de la función (una sola vez)
             CuerpoFuncion();
-            Declaracion();
 
+            // NOTA: Se eliminó la llamada a Declaracion() aquí.
+            // El flujo regresará al loop de Declaracion() original.
         }
         private void CuerpoFuncion()
         {
