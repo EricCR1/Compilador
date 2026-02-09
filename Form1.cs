@@ -107,38 +107,113 @@ namespace Compilador
 
         //**********OPCION DE ANALIZAR **********
 
+
+        private List<string> libreria = new List<string>
+{
+    // Librerías estándar de C más comunes
+    "math.h",       // Funciones matemáticas
+    "time.h",       // Funciones de tiempo
+    "ctype.h",      // Clasificación de caracteres
+
+};
+
+        private string ExtraerNombreLibreria(string linea)
+        {
+            try
+            {
+                // Eliminar #include y espacios
+                string resto = linea.Substring(8).Trim(); // 8 = longitud de "#include"
+
+                // Buscar librería entre < >
+                int inicioAngular = resto.IndexOf('<');
+                int finAngular = resto.IndexOf('>');
+
+                if (inicioAngular != -1 && finAngular != -1 && finAngular > inicioAngular)
+                {
+                    return resto.Substring(inicioAngular + 1, finAngular - inicioAngular - 1).Trim();
+                }
+
+                // Buscar librería entre " "
+                int inicioComilla = resto.IndexOf('"');
+                int finComilla = resto.LastIndexOf('"');
+
+                if (inicioComilla != -1 && finComilla != -1 && finComilla > inicioComilla)
+                {
+                    return resto.Substring(inicioComilla + 1, finComilla - inicioComilla - 1).Trim();
+                }
+
+                return string.Empty;
+            }
+            catch
+            {
+                return string.Empty;
+            }
+        }
         private void aNALIZARToolStripMenuItem_Click(object sender, EventArgs e)
         {
             guardar();
-            archivoback = archivo.Remove(archivo.Length - 1) + "back"; //extensión .back    
-            archivotrad = archivo.Remove(archivo.Length - 1) + "trad"; //extensión .trad
+            archivoback = archivo.Remove(archivo.Length - 1) + "back";
+            archivotrad = archivo.Remove(archivo.Length - 1) + "trad";
             N_error = 0;
             N_linea = 1;
             Rtbx_salida.Clear();
-            // ====== VERIFICACIÓN DE CABECERA ======
-            string primeraLinea = File.ReadLines(archivo).FirstOrDefault()?.Trim() ?? "";
 
-            if (!primeraLinea.Equals("#include <stdio.h>"))
+            // ====== VERIFICACIÓN DE CABECERA ======
+
+            // Buscar la primera línea que no esté vacía
+            string primeraLineaReal = "";
+            foreach (var linea in File.ReadLines(archivo))
             {
-                Rtbx_salida.AppendText("Error: El archivo debe iniciar con #include <stdio.h>\n");
-                Error(-1);
-                return; // detiene el análisis
+                string lineaTrim = linea.Trim();
+                if (!string.IsNullOrWhiteSpace(lineaTrim))
+                {
+                    primeraLineaReal = lineaTrim;
+                    break;
+                }
             }
 
-            // Si la cabecera está bien, la registramos manualmente con la excepción del punto
-            Rtbx_salida.AppendText("Cabecera detectada correctamente.\n");
+            // PASO 1: Verificar que empiece con #include
+            if (!primeraLineaReal.StartsWith("#include"))
+            {
+                Rtbx_salida.AppendText("Error: La primera línea no vacía debe ser una directiva #include\n");
+                Rtbx_salida.AppendText("Formato esperado: #include <libreria.h>\n");
+                Error(-1);
+                return;
+            }
+
+            // PASO 2: Extraer el nombre de la librería
+            string nombreLibreria = ExtraerNombreLibreria(primeraLineaReal);
+
+            if (string.IsNullOrEmpty(nombreLibreria))
+            {
+                Rtbx_salida.AppendText("Error: No se pudo extraer el nombre de la librería\n");
+                Rtbx_salida.AppendText("Formato esperado: #include <libreria.h>\n");
+                Error(-1);
+                return;
+            }
+
+            // PASO 3: Verificar que la librería esté en la lista (OPCIONAL - puedes quitar esto si quieres aceptar cualquiera)
+            if (!libreria.Contains(nombreLibreria))
+            {
+                Rtbx_salida.AppendText($"Advertencia: La librería '{nombreLibreria}' no está en la lista de librerías conocidas.\n");
+                Rtbx_salida.AppendText("Se procesará de todos modos.\n");
+            }
+
+            // Si llegamos aquí, la cabecera es válida
+            Rtbx_salida.AppendText($"Cabecera detectada correctamente: {nombreLibreria}\n");
 
             Escribir = new StreamWriter(archivoback);
             StreamWriter EscribirTrad = new StreamWriter(archivotrad);
             Leer = new StreamReader(archivo);
 
-            // Escribimos los tokens separados manualmente (manteniendo el punto)
+            // Escribimos los tokens separados manualmente
             Escribir.WriteLine("#");
             Escribir.WriteLine("include");
             Escribir.WriteLine("<");
             Escribir.WriteLine("libreria");
             Escribir.WriteLine(">");
-            EscribirTrad.Write("#include <stdio.h>\n");
+            EscribirTrad.Write($"#include <{nombreLibreria}>\n");
+
 
             // Saltamos la primera línea para que no se analice de nuevo
             Leer.ReadLine();
@@ -389,7 +464,7 @@ namespace Compilador
                     VariableGlobal();
                 }
 
-               else if (token == "If" || token == "Switch" || token == "For" || token == "do" || token == "While")
+                else if (token == "If" || token == "Switch" || token == "For" || token == "do" || token == "While")
                 {
 
                     SiguienteToken();
@@ -434,6 +509,12 @@ namespace Compilador
                 Arreglo();
                 // Después de Arreglo(), el token actual debería ser ';'
             }
+            if (token == "(")
+            {
+                Rtbx_salida.AppendText("Funcion encontrada");
+                SiguienteToken();
+                EstructuraFuncion();
+            }
 
             // Esta verificación se hace para todos los casos
             if (token == ";")
@@ -441,10 +522,10 @@ namespace Compilador
                 Rtbx_salida.AppendText("Declaración de variable global correcta.\n");
                 SiguienteToken();
             }
-            else
-            {
-                throw new Exception("Falta ';' al final de la declaración.");
-            }
+            //else
+            //{
+            //    throw new Exception("Falta ';' al final de la declaración.");
+            //}
         }
 
         private void FuncionMain()
@@ -459,19 +540,58 @@ namespace Compilador
 
             SiguienteToken();
 
-           CuerpoFuncion();
+            CuerpoFuncion();
 
             Rtbx_salida.AppendText("Función main analizada correctamente.\n");
         }
 
+        private void EstructuraFuncion()
+        {
+            
+            if (token != "int" && token != "float" && token != "double" &&
+                    token != "char" && token != "void" && token != "bool" && token != ")") {
+                throw new Exception("Se esperaba un tipo de dato para un parametro o cierre de )");
+            }
+            SiguienteToken();
+            if (token != "identificador")
+            {
+                Rtbx_salida.AppendText("Se esperaba un identificador como parametro");
+            }
+            SiguienteToken();
+
+            if (token != ")" && token != ",")
+            {
+                throw new Exception("Se esperaba ')' después de los parámetros de la función.");
+            }
+
+            if (token == ",")
+            {
+                SiguienteToken();
+                EstructuraFuncion(); // Llamada recursiva para manejar múltiples parámetros
+            }
+
+            if (token == ")")
+            {
+                Rtbx_salida.AppendText("Cierre correcto de funcion");
+            }
+            SiguienteToken();
+            CuerpoFuncion();
+            Declaracion();
+
+        }
         private void CuerpoFuncion()
         {
+            while (token == "LF" && !finArchivo)
+            {
+                SiguienteToken();
+            }
             if (token != "{")
-                throw new Exception("Se esperaba '{'.");
+                throw new Exception("Se esperaba '{'. es token es " + token);
 
             SiguienteToken();
 
             while (token != "}" && !finArchivo && token != "EOF")
+            
             {
                 if (token == "if")
                 {
@@ -515,6 +635,7 @@ namespace Compilador
                 else
                 {
                     SiguienteToken();
+                    
                 }
             }
 
@@ -682,7 +803,7 @@ namespace Compilador
                 SiguienteToken();
                 InicializacionArreglo();
             }
-            else if (token == "[") 
+            else if (token == "[")
             {
                 // Arreglo multidimensional
                 SiguienteToken();

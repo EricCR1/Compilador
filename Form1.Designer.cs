@@ -19,6 +19,7 @@
         public string token;          // Guarda el token actual leído del archivo .back
         public StreamReader LeerBack; // Para leer el archivo .back
         public bool finArchivo;       // Marca si ya se llegó al final del archivo
+        public int N_linea_sintactico;
 
 
         /// <summary>
