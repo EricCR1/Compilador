@@ -582,11 +582,30 @@ namespace Compilador
             Rtbx_salida.AppendText("Cierre correcto de parámetros\n");
             SiguienteToken(); // Consume el ')'
 
-            // 3. Procesar el cuerpo de la función (una sola vez)
-            CuerpoFuncion();
 
-            // NOTA: Se eliminó la llamada a Declaracion() aquí.
-            // El flujo regresará al loop de Declaracion() original.
+
+            while (token == "LF" && !finArchivo)
+            {
+                SiguienteToken();
+            }
+            // 3. Procesar el cuerpo de la función (una sola vez)
+            if (token == "{" )
+            {
+                CuerpoFuncion();
+                
+            }
+
+            else if (token == ";")
+            {
+                Rtbx_salida.AppendText("Funcion declarada");
+                SiguienteToken();
+            }
+
+            else {
+
+                throw new Exception("Se esperaba ; o {");
+            }
+
         }
         private void CuerpoFuncion()
         {
