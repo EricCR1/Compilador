@@ -548,30 +548,101 @@ namespace Compilador
         private void EstructuraFuncion()
         {
             // 1. Procesar parámetros en un bucle (no recursivo)
+            bool esperandoTipo = true; // Flag para controlar qué esperamos
+
             while (token != ")" && !finArchivo)
             {
-                if (token == "int" || token == "float" || token == "double" ||
-                    token == "char" || token == "void" || token == "bool")
+                // Saltar LF
+                if (token == "LF")
                 {
-                    SiguienteToken(); // Consume el tipo
-                    if (token != "identificador")
-                        throw new Exception("Se esperaba un identificador como parámetro.");
+                    SiguienteToken();
+                    continue;
+                }
 
-                    SiguienteToken(); // Consume el identificador
+                // Si esperamos un tipo de dato
+                if (esperandoTipo)
+                {
+                    // Verificar que sea un tipo válido
+                    if (token == "int" || token == "float" || token == "double" ||
+                        token == "char" || token == "void" || token == "bool")
+                    {
+                        SiguienteToken(); // Consume el tipo
+
+                        // Saltar LF entre tipo e identificador
+                        while (token == "LF" && !finArchivo)
+                        {
+                            SiguienteToken();
+                        }
+
+                        // Después del tipo DEBE venir un identificador
+                        if (token != "identificador")
+                        {
+                            if (token == ")")
+                                throw new Exception("Error: Falta el nombre del parámetro después del tipo.");
+                            else if (token == ",")
+                                throw new Exception("Error: Falta el nombre del parámetro después del tipo.");
+                            else
+                                throw new Exception($"Se esperaba un identificador como nombre de parámetro, se encontró: '{token}'");
+                        }
+
+                        SiguienteToken(); // Consume el identificador
+                        esperandoTipo = false; // Ahora esperamos ',' o ')'
+                    }
+                    else if (token == ")")
+                    {
+                        // Llegamos al final sin error
+                        break;
+                    }
+                    else
+                    {
+                        throw new Exception($"Se esperaba un tipo de dato (int, float, double, char, void, bool), se encontró: '{token}'");
+                    }
+                }
+                else // No esperamos tipo, esperamos ',' o ')'
+                {
+                    // Saltar LF
+                    while (token == "LF" && !finArchivo)
+                    {
+                        SiguienteToken();
+                    }
 
                     if (token == ",")
                     {
-                        SiguienteToken(); // Consume la coma y sigue el bucle
-                        continue;
+                        SiguienteToken(); // Consume la coma
+
+                        // Saltar LF después de la coma
+                        while (token == "LF" && !finArchivo)
+                        {
+                            SiguienteToken();
+                        }
+
+                        // ⭐ VALIDACIÓN: Después de coma NO puede venir ')'
+                        if (token == ")")
+                        {
+                            throw new Exception("Error: No se permite una coma antes del cierre de paréntesis. Coma final detectada.");
+                        }
+
+                        esperandoTipo = true; // Ahora esperamos otro tipo
                     }
-                }
-                else if (token == "LF")
-                {
-                    SiguienteToken();
-                }
-                else if (token != ")")
-                {
-                    throw new Exception("Se esperaba tipo de dato o cierre de paréntesis.");
+                    else if (token == ")")
+                    {
+                        // Fin de parámetros, salir del bucle
+                        break;
+                    }
+                    else if (token == "int" || token == "float" || token == "double" ||
+                             token == "char" || token == "void" || token == "bool")
+                    {
+                        // ⭐ VALIDACIÓN: Si viene un tipo sin coma previa
+                        throw new Exception("Error: Falta coma ',' entre parámetros.");
+                    }
+                    else if (token == "identificador")
+                    {
+                        throw new Exception("Error: Falta coma ',' entre parámetros.");
+                    }
+                    else
+                    {
+                        throw new Exception($"Se esperaba ',' o ')', se encontró: '{token}'");
+                    }
                 }
             }
 
@@ -582,30 +653,26 @@ namespace Compilador
             Rtbx_salida.AppendText("Cierre correcto de parámetros\n");
             SiguienteToken(); // Consume el ')'
 
-
-
+            // Saltar LF antes de { o ;
             while (token == "LF" && !finArchivo)
             {
                 SiguienteToken();
             }
-            // 3. Procesar el cuerpo de la función (una sola vez)
-            if (token == "{" )
+
+            // 3. Procesar el cuerpo de la función o declaración
+            if (token == "{")
             {
                 CuerpoFuncion();
-                
             }
-
             else if (token == ";")
             {
-                Rtbx_salida.AppendText("Funcion declarada");
+                Rtbx_salida.AppendText("Función declarada\n");
                 SiguienteToken();
             }
-
-            else {
-
-                throw new Exception("Se esperaba ; o {");
+            else
+            {
+                throw new Exception($"Se esperaba '{{' o ';' después de los parámetros, se encontró: '{token}'");
             }
-
         }
         private void CuerpoFuncion()
         {
