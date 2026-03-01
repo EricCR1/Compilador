@@ -144,10 +144,10 @@
             // 
             Rtbx_salida.BackColor = SystemColors.GrayText;
             Rtbx_salida.Dock = DockStyle.Bottom;
-            Rtbx_salida.Location = new Point(0, 383);
+            Rtbx_salida.Location = new Point(0, 378);
             Rtbx_salida.Multiline = true;
             Rtbx_salida.Name = "Rtbx_salida";
-            Rtbx_salida.Size = new Size(800, 67);
+            Rtbx_salida.Size = new Size(800, 72);
             Rtbx_salida.TabIndex = 2;
             // 
             // Form1

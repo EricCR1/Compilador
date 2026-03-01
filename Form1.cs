@@ -114,6 +114,7 @@ namespace Compilador
     "math.h",       // Funciones matemáticas
     "time.h",       // Funciones de tiempo
     "ctype.h",      // Clasificación de caracteres
+    "stdio.h"
 
 };
 
@@ -200,7 +201,7 @@ namespace Compilador
             }
 
             // Si llegamos aquí, la cabecera es válida
-            Rtbx_salida.AppendText($"Cabecera detectada correctamente: {nombreLibreria}\n");
+            Rtbx_salida.AppendText($"\nCabecera detectada correctamente: {nombreLibreria}\n");
 
             Escribir = new StreamWriter(archivoback);
             StreamWriter EscribirTrad = new StreamWriter(archivotrad);
@@ -409,7 +410,7 @@ namespace Compilador
 
             } while (i_caracter != -1);
 
-            Rtbx_salida.AppendText("Errores: " + N_error);
+            Rtbx_salida.AppendText("\nErrores: " + N_error + "\n");
             Escribir.Close();
             EscribirTrad.Close();
             Leer.Close();
@@ -483,7 +484,7 @@ namespace Compilador
         {
             // Ahora puede ser "identificador" O "main" (porque main está en palabras reservadas)
             if (token != "identificador" && token != "main")
-                throw new Exception("Se esperaba un identificador.");
+                throw new Exception("Se esperaba un identificador.\n");
 
             // Guardar el nombre del identificador
             string nombreIdentificador = token;
@@ -511,7 +512,7 @@ namespace Compilador
             }
             if (token == "(")
             {
-                Rtbx_salida.AppendText("Funcion encontrada");
+                Rtbx_salida.AppendText("Funcion encontrada\n");
                 SiguienteToken();
                 EstructuraFuncion();
             }
@@ -531,12 +532,12 @@ namespace Compilador
         private void FuncionMain()
         {
             if (token != "(")
-                throw new Exception("Se esperaba '(' después de main.");
+                throw new Exception("Se esperaba '(' después de main.\n");
 
             SiguienteToken();
 
             if (token != ")")
-                throw new Exception("Se esperaba ')' en main.");
+                throw new Exception("Se esperaba ')' en main.\n");
 
             SiguienteToken();
 
@@ -578,11 +579,11 @@ namespace Compilador
                         if (token != "identificador")
                         {
                             if (token == ")")
-                                throw new Exception("Error: Falta el nombre del parámetro después del tipo.");
+                                throw new Exception("Error: Falta el nombre del parámetro después del tipo.\n");
                             else if (token == ",")
-                                throw new Exception("Error: Falta el nombre del parámetro después del tipo.");
+                                throw new Exception("Error: Falta el nombre del parámetro después del tipo.\n");
                             else
-                                throw new Exception($"Se esperaba un identificador como nombre de parámetro, se encontró: '{token}'");
+                                throw new Exception($"Se esperaba un identificador como nombre de parámetro, se encontró: '{token}'\n");
                         }
 
                         SiguienteToken(); // Consume el identificador
@@ -595,7 +596,7 @@ namespace Compilador
                     }
                     else
                     {
-                        throw new Exception($"Se esperaba un tipo de dato (int, float, double, char, void, bool), se encontró: '{token}'");
+                        throw new Exception($"Se esperaba un tipo de dato (int, float, double, char, void, bool), se encontró: '{token}'\n");
                     }
                 }
                 else // No esperamos tipo, esperamos ',' o ')'
@@ -619,7 +620,7 @@ namespace Compilador
                         // ⭐ VALIDACIÓN: Después de coma NO puede venir ')'
                         if (token == ")")
                         {
-                            throw new Exception("Error: No se permite una coma antes del cierre de paréntesis. Coma final detectada.");
+                            throw new Exception("Error: No se permite una coma antes del cierre de paréntesis. Coma final detectada.\n");
                         }
 
                         esperandoTipo = true; // Ahora esperamos otro tipo
@@ -633,22 +634,22 @@ namespace Compilador
                              token == "char" || token == "void" || token == "bool")
                     {
                         // ⭐ VALIDACIÓN: Si viene un tipo sin coma previa
-                        throw new Exception("Error: Falta coma ',' entre parámetros.");
+                        throw new Exception("Error: Falta coma ',' entre parámetros.\n");
                     }
                     else if (token == "identificador")
                     {
-                        throw new Exception("Error: Falta coma ',' entre parámetros.");
+                        throw new Exception("Error: Falta coma ',' entre parámetros.\n");
                     }
                     else
                     {
-                        throw new Exception($"Se esperaba ',' o ')', se encontró: '{token}'");
+                        throw new Exception($"Se esperaba ',' o ')', se encontró: '{token}'\n");
                     }
                 }
             }
 
             // 2. Validar cierre de paréntesis
             if (token != ")")
-                throw new Exception("Se esperaba ')' al final de los parámetros.");
+                throw new Exception("Se esperaba ')' al final de los parámetros.\n");
 
             Rtbx_salida.AppendText("Cierre correcto de parámetros\n");
             SiguienteToken(); // Consume el ')'
@@ -671,7 +672,7 @@ namespace Compilador
             }
             else
             {
-                throw new Exception($"Se esperaba '{{' o ';' después de los parámetros, se encontró: '{token}'");
+                throw new Exception($"Se esperaba '{{' o ';' después de los parámetros, se encontró: '{token}'\n");
             }
         }
         private void CuerpoFuncion()
@@ -681,7 +682,7 @@ namespace Compilador
                 SiguienteToken();
             }
             if (token != "{")
-                throw new Exception("Se esperaba '{'. es token es " + token);
+                throw new Exception("Se esperaba '{'. es token es " + token + "\n");
 
             SiguienteToken();
 
@@ -724,7 +725,7 @@ namespace Compilador
                 {
                     SiguienteToken();
                     if (token != ";")
-                        throw new Exception("Se esperaba ';'.");
+                        throw new Exception("Se esperaba ';'.\n");
                     SiguienteToken();
                 }
                 else
@@ -735,7 +736,7 @@ namespace Compilador
             }
 
             if (token != "}")
-                throw new Exception("Se esperaba '}'.");
+                throw new Exception("Se esperaba '}'.\n");
 
             SiguienteToken();
         }
@@ -747,17 +748,17 @@ namespace Compilador
             SiguienteToken(); // consume 'if'
 
             if (token != "(")
-                throw new Exception("Se esperaba '(' después de if.");
+                throw new Exception("Se esperaba '(' después de if.\n");
             SiguienteToken();
 
             // Aquí buscamos "condicion" como identificador
             if (token != "identificador")
-                throw new Exception("Se esperaba condición en if.");
+                throw new Exception("Se esperaba condición en if.\n");
 
             SiguienteToken();
 
             if (token != ")")
-                throw new Exception("Se esperaba ')' después de la condición.");
+                throw new Exception("Se esperaba ')' después de la condición.\n");
             SiguienteToken();
 
             // Cuerpo del if
@@ -802,7 +803,7 @@ namespace Compilador
                 // Llamada a función
                 LlamadaFuncion();
                 if (token != ";")
-                    throw new Exception("Se esperaba ';'.");
+                    throw new Exception("Se esperaba ';'.\n");
                 SiguienteToken();
             }
             else if (token == "=")
@@ -814,7 +815,7 @@ namespace Compilador
                     SiguienteToken();
                 }
                 if (token != ";")
-                    throw new Exception("Se esperaba ';'.");
+                    throw new Exception("Se esperaba ';'.\n");
                 SiguienteToken();
             }
             else if (token == "[")
@@ -826,7 +827,7 @@ namespace Compilador
                     SiguienteToken();
                 }
                 if (token != "]")
-                    throw new Exception("Se esperaba ']'.");
+                    throw new Exception("Se esperaba ']'.\n");
                 SiguienteToken();
                 if (token == "=")
                 {
@@ -837,7 +838,7 @@ namespace Compilador
                     }
                 }
                 if (token != ";")
-                    throw new Exception("Se esperaba ';'.");
+                    throw new Exception("Se esperaba ';'.\n");
                 SiguienteToken();
             }
         }
@@ -865,7 +866,7 @@ namespace Compilador
             }
 
             if (token != ")")
-                throw new Exception("Se esperaba ')' al final de la llamada.");
+                throw new Exception("Se esperaba ')' al final de la llamada.\n");
             SiguienteToken();
         }
         private void Constante()
@@ -876,19 +877,19 @@ namespace Compilador
             }
             else
             {
-                throw new Exception("Se esperaba una constante o identificador en la asignación.");
+                throw new Exception("Se esperaba una constante o identificador en la asignación.\n");
             }
         }
 
         private void Arreglo()
         {
             if (token != "Numero")
-                throw new Exception("Se esperaba un número dentro de los corchetes del arreglo.");
+                throw new Exception("Se esperaba un número dentro de los corchetes del arreglo.\n");
 
             SiguienteToken();
 
             if (token != "]")
-                throw new Exception("Falta ']' en la declaración del arreglo.");
+                throw new Exception("Falta ']' en la declaración del arreglo.\n");
 
             SiguienteToken();  // Consume el ']'
 
@@ -912,7 +913,7 @@ namespace Compilador
         {
             // Debe empezar con {
             if (token != "{")
-                throw new Exception("Se esperaba '{' para inicialización del arreglo.");
+                throw new Exception("Se esperaba '{' para inicialización del arreglo.\n");
 
             SiguienteToken();
 
@@ -925,7 +926,7 @@ namespace Compilador
                 {
                     // Debe haber una coma entre elementos
                     if (token != ",")
-                        throw new Exception("Falta ',' entre elementos del arreglo.");
+                        throw new Exception("Falta ',' entre elementos del arreglo.\n");
 
                     SiguienteToken();
                     esperaElemento = true;
@@ -949,14 +950,14 @@ namespace Compilador
                     }
                     else
                     {
-                        throw new Exception("Se esperaba un elemento válido para el arreglo.");
+                        throw new Exception("Se esperaba un elemento válido para el arreglo.\n");
                     }
                 }
             }
 
             // Verificar que termine con }
             if (token != "}")
-                throw new Exception("Falta '}' al final de la inicialización del arreglo.");
+                throw new Exception("Falta '}' al final de la inicialización del arreglo.\n");
 
             SiguienteToken(); // Consumir el }
         }
@@ -1104,19 +1105,19 @@ namespace Compilador
             SiguienteToken(); // consume 'switch'
 
             if (token != "(")
-                throw new Exception("Se esperaba '(' después de switch.");
+                throw new Exception("Se esperaba '(' después de switch.\n");
             SiguienteToken();
 
             if (token != "identificador" && token != "Numero")
-                throw new Exception("Se esperaba variable en switch.");
+                throw new Exception("Se esperaba variable en switch.\n");
             SiguienteToken();
 
             if (token != ")")
-                throw new Exception("Se esperaba ')' en switch.");
+                throw new Exception("Se esperaba ')' en switch.\n");
             SiguienteToken();
 
             if (token != "{")
-                throw new Exception("Se esperaba '{' en switch.");
+                throw new Exception("Se esperaba '{' en switch.\n");
             SiguienteToken();
 
             // Procesar cases
@@ -1127,11 +1128,11 @@ namespace Compilador
                     SiguienteToken();
 
                     if (token != "Numero" && token != "identificador" && token != "cadena")
-                        throw new Exception("Se esperaba valor en case.");
+                        throw new Exception("Se esperaba valor en case.\n");
                     SiguienteToken();
 
                     if (token != ":")
-                        throw new Exception("Se esperaba ':' después del case.");
+                        throw new Exception("Se esperaba ':' después del case.\n");
                     SiguienteToken();
 
                     // Sentencias del case
@@ -1158,7 +1159,7 @@ namespace Compilador
                     {
                         SiguienteToken();
                         if (token != ";")
-                            throw new Exception("Se esperaba ';' después de break.");
+                            throw new Exception("Se esperaba ';' después de break.\n");
                         SiguienteToken();
                     }
                 }
@@ -1167,7 +1168,7 @@ namespace Compilador
                     SiguienteToken();
 
                     if (token != ":")
-                        throw new Exception("Se esperaba ':' después de default.");
+                        throw new Exception("Se esperaba ':' después de default.\n");
                     SiguienteToken();
 
                     // Sentencias del default
@@ -1187,14 +1188,14 @@ namespace Compilador
                     {
                         SiguienteToken();
                         if (token != ";")
-                            throw new Exception("Se esperaba ';' después de break.");
+                            throw new Exception("Se esperaba ';' después de break.\n");
                         SiguienteToken();
                     }
                 }
             }
 
             if (token != "}")
-                throw new Exception("Se esperaba '}' al final del switch.");
+                throw new Exception("Se esperaba '}' al final del switch.\n");
             SiguienteToken();
 
             Rtbx_salida.AppendText("Switch analizado correctamente.\n");
@@ -1208,7 +1209,7 @@ namespace Compilador
             SiguienteToken(); // consume 'for'
 
             if (token != "(")
-                throw new Exception("Se esperaba '(' después de for.");
+                throw new Exception("Se esperaba '(' después de for.\n");
             SiguienteToken();
 
             // Inicialización (puede incluir tipo de dato)
@@ -1231,7 +1232,7 @@ namespace Compilador
             }
 
             if (token != ";")
-                throw new Exception("Se esperaba ';' después de la inicialización.");
+                throw new Exception("Se esperaba ';' después de la inicialización.\n");
             SiguienteToken();
 
             // Condición
@@ -1255,7 +1256,7 @@ namespace Compilador
             }
 
             if (token != ";")
-                throw new Exception("Se esperaba ';' después de la condición.");
+                throw new Exception("Se esperaba ';' después de la condición.\n");
             SiguienteToken();
 
             // Incremento
@@ -1273,7 +1274,7 @@ namespace Compilador
             }
 
             if (token != ")")
-                throw new Exception("Se esperaba ')' en for.");
+                throw new Exception("Se esperaba ')' en for.\n");
             SiguienteToken();
 
             // Cuerpo
@@ -1295,16 +1296,16 @@ namespace Compilador
             SiguienteToken(); // consume 'while'
 
             if (token != "(")
-                throw new Exception("Se esperaba '(' después de while.");
+                throw new Exception("Se esperaba '(' después de while.\n");
             SiguienteToken();
 
             // Condición simplificada
             if (token != "identificador")
-                throw new Exception("Se esperaba condición en while.");
+                throw new Exception("Se esperaba condición en while.\n");
             SiguienteToken();
 
             if (token != ")")
-                throw new Exception("Se esperaba ')' después de la condición.");
+                throw new Exception("Se esperaba ')' después de la condición.\n");
             SiguienteToken();
 
             // Cuerpo
@@ -1337,24 +1338,24 @@ namespace Compilador
             }
 
             if (token != "while")
-                throw new Exception("Se esperaba 'while' después del cuerpo del do.");
+                throw new Exception("Se esperaba 'while' después del cuerpo del do.\n");
             SiguienteToken();
 
             if (token != "(")
-                throw new Exception("Se esperaba '(' después de while.");
+                throw new Exception("Se esperaba '(' después de while.\n");
             SiguienteToken();
 
             // Condición
             if (token != "identificador")
-                throw new Exception("Se esperaba condición en do-while.");
+                throw new Exception("Se esperaba condición en do-while.\n");
             SiguienteToken();
 
             if (token != ")")
-                throw new Exception("Se esperaba ')' después de la condición.");
+                throw new Exception("Se esperaba ')' después de la condición.\n");
             SiguienteToken();
 
             if (token != ";")
-                throw new Exception("Se esperaba ';' al final del do-while.");
+                throw new Exception("Se esperaba ';' al final del do-while.\n");
             SiguienteToken();
 
             Rtbx_salida.AppendText("Do-while analizado correctamente.\n");
@@ -1374,7 +1375,7 @@ namespace Compilador
             }
 
             if (token != ";")
-                throw new Exception("Se esperaba ';' después de return.");
+                throw new Exception("Se esperaba ';' después de return.\n");
             SiguienteToken();
         }
     }
